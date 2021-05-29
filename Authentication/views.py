@@ -13,8 +13,6 @@ from django.contrib.auth import authenticate, login, logout
 from Authentication.forms import CreateUserForm
 # Create your views here.
 
-# p1q2r3s4
-
 
 @csrf_exempt
 def registerPage(request):
