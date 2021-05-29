@@ -1,0 +1,8 @@
+from django.urls import path
+from Communication import views
+
+app_name = 'Communication'
+
+urlpatterns = [
+    path('index/', views.index, name='index')
+]
