@@ -5,4 +5,5 @@ from django.http import HttpResponse
 
 
 def index(request):
-    return HttpResponse("<h1>Hello World</h1> ")
+    diction = {'sample_text': 'This is a text'}
+    return render(request, 'index.html', context=diction)
