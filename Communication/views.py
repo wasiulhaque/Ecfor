@@ -32,4 +32,15 @@ def listen(request):
         except:
             print("Couldn't recognize the voice")
 
-    return redirect('Communication:index')
+    humanMessage = read_file()
+    print(humanMessage)
+    context = {'humanMessage': humanMessage}
+    return render(request, 'index.html', context=context)
+
+
+def read_file():
+    file = open('speech_to_txt', 'r')
+    file_content = file.read()
+    file.close()
+    # file_content = "BD"
+    return file_content
