@@ -1,1 +1,11 @@
-<h1>register</h1>
+<h1>Register</h1>
+
+<form method="POST" action="">
+    
+    {% csrf_token %}
+    <!-- csrf token helps to send the data to database -->
+    
+    {{form.as_p}}
+    <input type="submit" name="Create User">
+
+</form>
