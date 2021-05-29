@@ -1,3 +1,11 @@
+<style>
+.hello-msg{
+    font-size: 20px;
+    color: blueviolet;
+    margin-right: 20px;
+}
+</style>
+
 {% extends 'base.html' %}
 {% block body_block %}
 
@@ -5,5 +13,10 @@
 <h1>This is our home page</h1>
 <h2>{{sample_text}}</h2>
 
+
+<span class="hello-msg">Hello {{request.user}},</span>
+<span class="hello-msg">
+    <a href="{% url 'Authentication:logout' %}">Logout</a>
+</span>
 
 {% endblock %}
