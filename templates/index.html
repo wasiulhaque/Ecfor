@@ -1,22 +1,51 @@
 <style>
-.hello-msg{
-    font-size: 20px;
-    color: blueviolet;
-    margin-right: 20px;
+    .hello-msg {
+  font-size: 20px;
+  color: blueviolet;
+  margin-right: 20px;
 }
-</style>
 
+.left,
+.right {
+  height: 50%;
+  width: 50%;
+  position: fixed;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+.left {
+  left: 0;
+  background: lightblue;
+}
+
+.right {
+  right: 0;
+  background: lightgoldenrodyellow;
+}
+
+</style>
 {% extends 'base.html' %}
 {% block body_block %}
 
-
-<h1>This is our home page</h1>
-<h2>{{sample_text}}</h2>
-
+<h1>Home</h1>
+<!-- <h2>{{sample_text}}</h2> -->
 
 <span class="hello-msg">Hello {{request.user}},</span>
 <span class="hello-msg">
     <a href="{% url 'Authentication:logout' %}">Logout</a>
 </span>
+
+
+<div class="left">
+    <h1>Speech to Text</h1>
+    <a href="{% url 'Communication:listen' %}">Listen</a>
+</div>
+
+<div class="right">
+    <h1>Text to Speech</h1>
+</div>
+
+
 
 {% endblock %}

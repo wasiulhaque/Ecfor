@@ -1,7 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.http import HttpResponse
 
 from django.contrib.auth.decorators import login_required
+
+import speech_recognition as sr
+
 # Create your views here.
 
 
@@ -9,3 +12,24 @@ from django.contrib.auth.decorators import login_required
 def index(request):
     diction = {'sample_text': 'This is a text'}
     return render(request, 'index.html', context=diction)
+
+
+@login_required
+def listen(request):
+
+    r = sr.Recognizer()
+
+    with sr.Microphone() as source:
+        print("Speak Anything: ")
+        audio = r.listen(source)
+
+        try:
+            text = r.recognize_google(audio)
+            print("You said: {}".format(text))
+            text_file = open("speech_to_txt", "wt")
+            text_file.write(text)
+            text_file.close()
+        except:
+            print("Couldn't recognize the voice")
+
+    return redirect('Communication:index')

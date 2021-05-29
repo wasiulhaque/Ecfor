@@ -4,5 +4,6 @@ from Communication import views
 app_name = 'Communication'
 
 urlpatterns = [
-    path('index/', views.index, name='index')
+    path('index/', views.index, name='index'),
+    path('listen/', views.listen, name='listen'),
 ]
