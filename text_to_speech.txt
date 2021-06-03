@@ -1,3 +1,0 @@
-Python is a very powerful modern programming language. You can do web develepment with Django Framework.
-Numpy and Pandas library are used in Data Science.
-Tensorflow, keras, pytorch are machine learning and deep learning library of python.

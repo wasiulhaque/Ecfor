@@ -3,7 +3,6 @@ from django.http import HttpResponse
 
 from django.contrib.auth.decorators import login_required
 
-# speech to text
 import speech_recognition as sr
 
 # text to speech
@@ -13,6 +12,7 @@ from gtts import gTTS
 from playsound import playsound
 
 import os
+
 
 # Create your views here.
 
@@ -35,7 +35,7 @@ def listen(request):
         try:
             text = r.recognize_google(audio)
             print("You said: {}".format(text))
-            text_file = open("speech_to_text", "wt")
+            text_file = open("speech_to_txt", "wt")
             text_file.write(text)
             text_file.close()
         except:
@@ -48,7 +48,7 @@ def listen(request):
 
 
 def read_file():
-    file = open('speech_to_text', 'r')
+    file = open('speech_to_txt', 'r')
     file_content = file.read()
     file.close()
     # file_content = "BD"
