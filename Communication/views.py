@@ -8,6 +8,10 @@ import speech_recognition as sr
 
 # text to speech
 from gtts import gTTS
+
+# playsound
+from playsound import playsound
+
 import os
 
 # Create your views here.
@@ -68,6 +72,7 @@ def speak(request):
 
     text_File.close()
 
-    os.system("start output.mp3")
+    # os.system("start output.mp3")     #stop using media player
+    playsound('output.mp3')
 
     return redirect('Communication:index')
