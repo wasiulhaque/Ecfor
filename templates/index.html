@@ -38,6 +38,12 @@
   <h1>Speech to Text</h1>
   <a href="{% url 'Communication:listen' %}">Listen</a>
   <p>{{humanMessage}}</p>
+  
+  
+  <video height="200" width="350" controls>
+    <source src="/static/dataset/{{video_id}}.mp4" type="video/mp4">
+    Your browser doesn't support this file.
+  </video>
 </div>
 
 <div class="right">

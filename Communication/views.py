@@ -11,6 +11,8 @@ from gtts import gTTS
 # playsound
 from playsound import playsound
 
+import json
+
 import os
 
 
@@ -43,7 +45,26 @@ def listen(request):
 
     humanMessage = read_file()
     print(humanMessage)
-    context = {'humanMessage': humanMessage}
+    # print(type(humanMessage))
+
+    # collecting video file id for the word
+    mapping = make_video_dictionary()
+    list_of_videos = mapping[humanMessage]
+
+    video_id = "00335"
+    for unit in list_of_videos:
+        cwd = os.getcwd()
+        # print(cwd)
+        # print("current")
+        path = cwd+'\\static\\dataset\\'+unit+'.mp4'
+        # print(path)
+        if(os.path.isfile(path)):
+            video_id = unit
+            break
+
+    print(video_id)
+
+    context = {'humanMessage': humanMessage, 'video_id': video_id}
     return render(request, 'index.html', context=context)
 
 
@@ -76,3 +97,34 @@ def speak(request):
     playsound('output.mp3')
 
     return redirect('Communication:index')
+
+
+def text_to_sign():
+    pass
+
+
+def make_video_dictionary():
+
+    file = open('dataset.json')
+
+    load = json.load(file)
+
+    mapping = {}
+
+    for serial in range(len(load)):
+        unit_data = load[serial]
+        for key in unit_data:
+            if(key == 'gloss'):
+                word = unit_data[key]
+                # print(unit_data[key])
+            if(key == 'instances'):
+                video_list = []
+                for number in range(len(unit_data[key])):
+                    video_id = unit_data[key][number]['video_id']
+                    video_list.append(video_id)
+                # print(unit_data[key][0]['video_id'])
+                mapping[word] = video_list
+
+    # for key, value in mapping.items():
+    #     print("{} -> {}".format(key, value))
+    return mapping
