@@ -46,10 +46,22 @@ var videoPlayer = document.getElementById('videoPlayer')
 var currentDirectory = window.location.pathname.split('/').slice(0, -1).join('/')
 console.log(currentDirectory)
 console.log("here");
-var vArray = [
-    "/static/dataset/00335.mp4",
-    "/static/dataset/00336.mp4"
-]
+
+var videos = JSON.parse("{{videoList|escapejs}}")
+vArray=[]
+console.log(typeof(videos[0]))
+
+for(let iter=0;iter<videos.length;iter++)
+{
+  vArray.push("/static/dataset/"+videos[iter]+".mp4");
+}
+
+
+// var vArray = [
+//     "/static/dataset/00335.mp4",
+//     "/static/dataset/00336.mp4"
+// ]
+
 
 videoPlayer.src = vArray[0]
 

@@ -76,13 +76,14 @@ def listen(request):
                 break
 
     if not allVideos:
-        allVideos.append(default_path)
+        allVideos.append(video_id)
     # combination of all the videos will be video_id
     print(allVideos)
     # video_process(allVideos)
     # video will contain id of a video which is the concat of all the videos, allVideos contains 1 set video of shob word
 
-    context = {'humanMessage': humanMessage, 'allVideos': allVideos}
+    allVideosJson = json.dumps(allVideos)
+    context = {'humanMessage': humanMessage, 'videoList': allVideosJson}
     return render(request, 'index.html', context=context)
     # return redirect('index.html')
 
