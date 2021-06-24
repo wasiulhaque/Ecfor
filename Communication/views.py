@@ -31,6 +31,7 @@ def listen(request):
     r = sr.Recognizer()
 
     with sr.Microphone() as source:
+        # r.adjust_for_ambient_noise(source)
         print("Speak Anything: ")
         audio = r.listen(source)
 
@@ -49,20 +50,28 @@ def listen(request):
 
     # collecting video file id for the word
     mapping = make_video_dictionary()
-    list_of_videos = mapping[humanMessage]
+
+    messageWords = humanMessage.split()
 
     video_id = "00335"
-    for unit in list_of_videos:
-        cwd = os.getcwd()
-        # print(cwd)
-        # print("current")
-        path = cwd+'\\static\\dataset\\'+unit+'.mp4'
-        # print(path)
-        if(os.path.isfile(path)):
-            video_id = unit
-            break
+    allVideos = []
 
-    print(video_id)
+    for word in messageWords:
+        list_of_videos = mapping[word]
+
+        for unit in list_of_videos:
+            cwd = os.getcwd()
+            # print(cwd)
+            # print("current")
+            path = cwd+'\\static\\dataset\\'+unit+'.mp4'
+            # print(path)
+            if(os.path.isfile(path)):
+                video_id = unit
+                allVideos.push(video_id)
+
+    # combination of all the videos will be video_id
+    print(allVideos)
+    # video will contain id of a video which is the concat of all the videos, allVideos contains 1 set video of shob word
 
     context = {'humanMessage': humanMessage, 'video_id': video_id}
     return render(request, 'index.html', context=context)
