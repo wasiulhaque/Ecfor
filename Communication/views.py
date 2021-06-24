@@ -3,6 +3,7 @@ from django.http import HttpResponse
 
 from django.contrib.auth.decorators import login_required
 
+
 import speech_recognition as sr
 
 # text to speech
@@ -16,8 +17,8 @@ import json
 
 import os
 
-# from video_play import VideoPlayerPath
 import cv2
+# from video_play import VideoPlayerPath
 
 # Create your views here.
 
@@ -71,18 +72,19 @@ def listen(request):
             # print(path)
             if(os.path.isfile(path)):
                 video_id = unit
-                allVideos.append(path)
+                allVideos.append(video_id)
                 break
 
     if not allVideos:
         allVideos.append(default_path)
     # combination of all the videos will be video_id
     print(allVideos)
-    video_process(allVideos)
+    # video_process(allVideos)
     # video will contain id of a video which is the concat of all the videos, allVideos contains 1 set video of shob word
 
-    context = {'humanMessage': humanMessage, 'video_id': video_id}
+    context = {'humanMessage': humanMessage, 'allVideos': allVideos}
     return render(request, 'index.html', context=context)
+    # return redirect('index.html')
 
 
 def read_file():

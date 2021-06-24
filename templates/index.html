@@ -39,11 +39,32 @@
   <a href="{% url 'Communication:listen' %}">Listen</a>
   <p>{{humanMessage}}</p>
   
+<video id="videoPlayer" height="200px" width="360px" autoplay autobuffer controls></video>
+
+<script>
+var videoPlayer = document.getElementById('videoPlayer')
+var currentDirectory = window.location.pathname.split('/').slice(0, -1).join('/')
+console.log(currentDirectory)
+console.log("here");
+var vArray = [
+    "/static/dataset/00335.mp4",
+    "/static/dataset/00336.mp4"
+]
+
+videoPlayer.src = vArray[0]
+
+i = 1
+videoPlayer.onended = function(){
+    if (i < vArray.length) {
+        videoPlayer.src = vArray[i]
+       i++
+    }
+}
+</script>
+ 
   
-  <video height="200" width="350" controls>
-    <source src="/static/dataset/{{video_id}}.mp4" type="video/mp4">
-    Your browser doesn't support this file.
-  </video>
+
+  
 </div>
 
 <div class="right">
