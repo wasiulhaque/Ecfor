@@ -13,8 +13,11 @@ from playsound import playsound
 
 import json
 
+
 import os
 
+# from video_play import VideoPlayerPath
+import cv2
 
 # Create your views here.
 
@@ -54,6 +57,7 @@ def listen(request):
     messageWords = humanMessage.split()
 
     video_id = "00335"
+    default_path = str(os.getcwd())+'\\static\\dataset\\00335'+'.mp4'
     allVideos = []
 
     for word in messageWords:
@@ -67,10 +71,14 @@ def listen(request):
             # print(path)
             if(os.path.isfile(path)):
                 video_id = unit
-                allVideos.push(video_id)
+                allVideos.append(path)
+                break
 
+    if not allVideos:
+        allVideos.append(default_path)
     # combination of all the videos will be video_id
     print(allVideos)
+    video_process(allVideos)
     # video will contain id of a video which is the concat of all the videos, allVideos contains 1 set video of shob word
 
     context = {'humanMessage': humanMessage, 'video_id': video_id}
@@ -137,3 +145,25 @@ def make_video_dictionary():
     # for key, value in mapping.items():
     #     print("{} -> {}".format(key, value))
     return mapping
+
+
+def video_process(video_path_list):
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter('merged_drum.avi', fourcc, 25.0, (1920, 1080))
+    # print(video_path_list)
+    for path in video_path_list:
+        cap = cv2.VideoCapture(path)
+        # frameToStart = 100
+        # cap.set(cv2.CAP_PROP_POS_FRAMES, frameToStart)
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frame = cv2.resize(frame, (640, 480))
+            cv2.imshow('frame', frame)
+            ch = 0xFF & cv2.waitKey(15)
+            out.write(frame)
+            # if ch == 27:
+            #     break
+            # cap.release () # Turn off the camera
+    out.release()
