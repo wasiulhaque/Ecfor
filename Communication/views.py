@@ -2,6 +2,8 @@ from django.shortcuts import redirect, render
 from django.http import HttpResponse
 
 from django.contrib.auth.decorators import login_required
+# import pygame
+from datetime import datetime
 
 
 import speech_recognition as sr
@@ -16,6 +18,8 @@ import json
 
 
 import os
+
+from pygame import mixer
 
 import cv2
 # from video_play import VideoPlayerPath
@@ -108,14 +112,21 @@ def speak(request):
     language = 'en'
 
     # slow means audio will played slow
+    date_string = datetime.now().strftime("%d%m%Y%H%M%S")
+    audiofilename = "voice"+date_string+".mp3"
+
     output = gTTS(text=myText, lang=language, slow=False)
 
-    output.save("output.mp3")
+    output.save(audiofilename)
+    # output.save("output.mp3")
 
     text_File.close()
 
     # os.system("start output.mp3")     #stop using media player
-    playsound('output.mp3')
+    # playsound('output.mp3', True)
+    # deleting the audio file to avoid audio overwrite permission problem
+    playsound(audiofilename)
+    os.remove(audiofilename)
 
     return redirect('Communication:index')
 
