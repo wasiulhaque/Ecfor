@@ -62,18 +62,19 @@ def listen(request):
     allVideos = []
 
     for word in messageWords:
-        list_of_videos = mapping[word]
+        if word in mapping:
+            list_of_videos = mapping[word]
 
-        for unit in list_of_videos:
-            cwd = os.getcwd()
-            # print(cwd)
-            # print("current")
-            path = cwd+'\\static\\dataset\\'+unit+'.mp4'
-            # print(path)
-            if(os.path.isfile(path)):
-                video_id = unit
-                allVideos.append(video_id)
-                break
+            for unit in list_of_videos:
+                cwd = os.getcwd()
+                # print(cwd)
+                # print("current")
+                path = cwd+'\\static\\dataset\\'+unit+'.mp4'
+                # print(path)
+                if(os.path.isfile(path)):
+                    video_id = unit
+                    allVideos.append(video_id)
+                    break
 
     if not allVideos:
         allVideos.append(video_id)
