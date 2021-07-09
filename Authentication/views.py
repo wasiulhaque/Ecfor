@@ -31,7 +31,7 @@ def registerPage(request):
                 return redirect('Authentication:login')
 
         context = {'form': form}
-        return render(request, 'register.html', context=context)
+        return render(request, 'register-2.html', context=context)
 
 
 def loginPage(request):
@@ -51,7 +51,7 @@ def loginPage(request):
                 messages.info(request, "Username or Password is incorrect.")
 
         context = {}
-        return render(request, 'login.html', context)
+        return render(request, 'login-2.html', context)
 
 
 @login_required(login_url='Authentication:login')
