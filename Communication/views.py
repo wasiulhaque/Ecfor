@@ -30,7 +30,7 @@ import cv2
 @login_required(login_url='Authentication:login')
 def index(request):
     diction = {'sample_text': 'This is a text'}
-    return render(request, 'index.html', context=diction)
+    return render(request, 'index2.html', context=diction)
 
 
 @login_required
@@ -89,7 +89,7 @@ def listen(request):
 
     allVideosJson = json.dumps(allVideos)
     context = {'humanMessage': humanMessage, 'videoList': allVideosJson}
-    return render(request, 'index.html', context=context)
+    return render(request, 'index2.html', context=context)
     # return redirect('index.html')
 
 
