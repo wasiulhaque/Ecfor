@@ -66,6 +66,7 @@ def listen(request):
     allVideos = []
 
     for word in messageWords:
+        found = False
         if word in mapping:
             list_of_videos = mapping[word]
 
@@ -78,7 +79,13 @@ def listen(request):
                 if(os.path.isfile(path)):
                     video_id = unit
                     allVideos.append(video_id)
+                    found = True
                     break
+
+        if not found:
+            video_id = "00000"
+            # print("check")
+            allVideos.append(video_id)
 
     if not allVideos:
         allVideos.append(video_id)
