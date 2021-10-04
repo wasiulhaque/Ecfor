@@ -48,8 +48,8 @@ import cv2
 import numpy as np
 
 
-
-
+from django.http.response import StreamingHttpResponse
+from PIL import Image 
 
 
 @login_required(login_url='Authentication:login')
@@ -293,7 +293,10 @@ def ML(request):
                     min_score_thresh=.5,
                     agnostic_mode=False)
 
-        cv2.imshow('object detection',  cv2.resize(image_np_with_detections, (800, 600)))
+        # cv2.imshow('object detection',  cv2.resize(image_np_with_detections, (800, 600)))
+        image_uri = to_image(cv2.resize(image_np_with_detections, (800, 600)))
+        # image_uri = to_data_uri(pil_image)
+        return render(request, 'index2.html', {'image_uri': image_uri})
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
             cap.release()
@@ -308,3 +311,29 @@ def get_prediction(image):
     prediction_dict = detection_model.predict(image, shapes)
 #     detections = detection_model.postprocess(prediction_dict, shapes)
     return prediction_dict
+
+
+# def stream(request):
+#     return StreamingHttpResponse(gen(()),
+# 					content_type='multipart/x-mixed-replace; boundary=frame')
+
+import base64
+from io import BytesIO
+
+def to_image(numpy_img):
+    img = Image.fromarray(numpy_img, 'RGB')
+    # return img
+    data = BytesIO()
+    img.save(data, "JPEG") # pick your format
+    data64 = base64.b64encode(data.getvalue())
+    return u'data:img/jpeg;base64,'+data64.decode('utf-8') 
+
+
+
+
+
+# def to_data_uri(pil_img):
+#     data = BytesIO()
+#     img.save(data, "JPEG") # pick your format
+#     data64 = base64.b64encode(data.getvalue())
+#     return u'data:img/jpeg;base64,'+data64.decode('utf-8') 

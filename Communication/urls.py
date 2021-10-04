@@ -8,4 +8,5 @@ urlpatterns = [
     path('listen/', views.listen, name='listen'),
     # path('speak/', views.speak, name='speak'),
     path('speak/', views.ML, name='speak'),
+    # path('stream/',views.stream, name='stream'),
 ]
