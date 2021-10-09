@@ -261,9 +261,15 @@ def ML(request):
 
 
     # run
-    while True: 
+    numberOfFrame=0
+    frame_uri=[]
+
+    frameNumber=0
+
+    while numberOfFrame<5: 
         ret, frame = cap.read()
         image_np = np.array(frame)
+        numberOfFrame=numberOfFrame+1
         
         input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
         detections = detect_fn(input_tensor)
@@ -277,7 +283,7 @@ def ML(request):
         detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
         
         pred = get_prediction(input_tensor)
-        print(pred)
+        # print(pred)
 
         label_id_offset = 1
         image_np_with_detections = image_np.copy()
@@ -295,8 +301,16 @@ def ML(request):
 
         # cv2.imshow('object detection',  cv2.resize(image_np_with_detections, (800, 600)))
         image_uri = to_image(cv2.resize(image_np_with_detections, (800, 600)))
+        frame_uri.append(image_uri)
         # image_uri = to_data_uri(pil_image)
-        return render(request, 'index2.html', {'image_uri': image_uri})
+        # print(numberOfFrame)
+        if(numberOfFrame==4):
+        #     print("In")
+        #     print(len(frame_uri))
+            frames = json.dumps(frame_uri)
+            context = {'frames': frames}
+            return render(request, 'index2.html', context=context)
+        # return render(request, 'index2.html', {'image_uri': image_uri})
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
             cap.release()
