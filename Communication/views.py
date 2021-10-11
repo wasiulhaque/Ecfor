@@ -163,6 +163,24 @@ def speak(request):
     return redirect('Communication:index')
 
 
+def speakWithoutRequest():
+   
+    text_File = open("text_to_speech.txt", "r")
+    myText = text_File.read().replace("\n", " ")
+
+    language = 'en'
+
+    date_string = datetime.now().strftime("%d%m%Y%H%M%S")
+    audiofilename = "voice"+date_string+".mp3"
+
+    output = gTTS(text=myText, lang=language, slow=False)
+
+    output.save(audiofilename)
+    text_File.close()
+
+    playsound(audiofilename)
+    os.remove(audiofilename)
+
 def text_to_sign():
     pass
 
@@ -228,6 +246,10 @@ CONFIG_PATH = MODEL_PATH+'/my_ssd_mobnet/pipeline.config'
 CHECKPOINT_PATH = MODEL_PATH+'/my_ssd_mobnet/'
 
 
+
+detectedClass=[]
+detectedScore=[]
+
 def ML(request):  
 
 
@@ -270,6 +292,7 @@ def ML(request):
         ret, frame = cap.read()
         image_np = np.array(frame)
         numberOfFrame=numberOfFrame+1
+        print(numberOfFrame)
         
         input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
         detections = detect_fn(input_tensor)
@@ -281,6 +304,10 @@ def ML(request):
 
         # detection_classes should be ints.
         detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
+        detectedClass.append(detections['detection_classes'][0])
+        detectedScore.append(detections['detection_scores'][0])
+        # print(detections['detection_classes'][0])
+        # print(detections['detection_scores'][0])
         
         pred = get_prediction(input_tensor)
         # print(pred)
@@ -298,17 +325,23 @@ def ML(request):
                     max_boxes_to_draw=5,
                     min_score_thresh=.5,
                     agnostic_mode=False)
+        
 
         # cv2.imshow('object detection',  cv2.resize(image_np_with_detections, (800, 600)))
         image_uri = to_image(cv2.resize(image_np_with_detections, (800, 600)))
         frame_uri.append(image_uri)
         # image_uri = to_data_uri(pil_image)
         # print(numberOfFrame)
-        if(numberOfFrame==4):
+        if(numberOfFrame==5):
         #     print("In")
         #     print(len(frame_uri))
+            textList=detectedText(detectedClass,detectedScore)
+            textForSpeech(textList)
+            speakWithoutRequest()
+            speechMessage=stringToPrint(textList)
+
             frames = json.dumps(frame_uri)
-            context = {'frames': frames}
+            context = {'frames': frames, 'speechMessage':speechMessage}
             return render(request, 'index2.html', context=context)
         # return render(request, 'index2.html', {'image_uri': image_uri})
         
@@ -351,3 +384,74 @@ def to_image(numpy_img):
 #     img.save(data, "JPEG") # pick your format
 #     data64 = base64.b64encode(data.getvalue())
 #     return u'data:img/jpeg;base64,'+data64.decode('utf-8') 
+
+def detectedText(detectedClass, detectedScore):
+    dictionary ={0:"Hello",1:"Yes",2:"No",3:"Thank you",4:"I Love You"}
+    finalText=[]
+    for i in range(len(detectedClass)):
+        if detectedScore[i]>.80 and (dictionary[detectedClass[i]] not in finalText):
+            finalText.append( dictionary[detectedClass[i]] )
+        
+    print(finalText)
+    return finalText
+
+def textForSpeech(textList):
+    with open('text_to_speech.txt', 'w') as f:
+        for item in textList:
+            f.write("%s " % item)
+
+
+def stringToPrint(wordList):
+    message=""
+    first=True
+
+    for word in wordList:
+        if first==False:
+            message=message+" "
+
+        message=message+word
+        first=False
+
+    return message
+
+
+
+# Unproccessed Video Feed
+def gen(camera):
+    while True:
+        frame = cam.get_frame()
+        # print(frame)
+        # m_image, lab =predict_video(frame, "result")
+        print(lab)
+        # m_image = cv2.cvtColor(m_image, cv2.COLOR_RGB2BGR)
+        ret, m_image = cv2.imencode('.jpg', m_image)
+        m_image = m_image.tobytes()
+        yield(b'--frame\r\n'
+              b'Content-Type: image/jpeg\r\n\r\n' + m_image + b'\r\n\r\n')
+
+
+def livefeed(request):
+    try:
+        return StreamingHttpResponse(gen(VideoCamera()), content_type="multipart/x-mixed-replace;boundary=frame")
+    except Exception as e:  # This is bad! replace it with proper handling
+        print(e)
+
+
+
+class VideoCamera(object):
+    def __init__(self):
+        self.video = cv2.VideoCapture(0)
+        (self.grabbed, self.frame) = self.video.read()
+        threading.Thread(target=self.update, args=()).start()
+
+    def __del__(self):
+        self.video.release()
+
+    def get_frame(self):
+        image = self.frame
+        # ret, jpeg = cv2.imencode('.jpg', image)
+        return image
+
+    def update(self):
+        while True:
+            (self.grabbed, self.frame) = self.video.read()

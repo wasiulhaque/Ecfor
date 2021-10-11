@@ -146,18 +146,20 @@
                     <a class="button" style="color: white !important; font-size:large"
                       href="{% url 'Communication:speak' %}">Sign Language</a>
                     <!-- <video id="#" height="200px" width="360px" autoplay autobuffer controls></video> -->
+                    <p style="color: white;">{{speechMessage}}</p>
+                   
+                    
                     <!-- <% for frame in frame_uri %> -->
                     <div>
-                      <img  alt="Sign Language Detection" height="200px" width="360px"
-                        name="slide">
+                      <img alt="Sign Language Detection" height="200px" width="360px" name="slide">
 
                       <script>
                         var i = 0; 			// Start Point
                         var images = [];	// Images Array
-                        var time = 250;	// Time Between Switch
+                        var time = 350;	// Time Between Switch
                         var frameList = JSON.parse("{{frames|escapejs}}")
 
-                        
+
                         // Change Image
                         function changeImg() {
                           document.slide.src = frameList[i]
@@ -175,7 +177,7 @@
                           setTimeout("changeImg()", time);
                         }
 
-                        
+
                         // Run function when page loads
                         window.onload = changeImg;
                       </script>
