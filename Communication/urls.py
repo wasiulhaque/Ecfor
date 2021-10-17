@@ -7,6 +7,7 @@ urlpatterns = [
     path('index/', views.index, name='index'),
     path('listen/', views.listen, name='listen'),
     # path('speak/', views.speak, name='speak'),
-    path('speak/', views.index, name='speak'),
+    path('speak/', views.live, name='speak'),
+    path('liveText/', views.liveText, name='liveText'),
     # path('stream/',views.livefeed, name='stream'),
 ]

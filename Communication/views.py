@@ -10,7 +10,7 @@ from object_detection.builders import model_builder
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.utils import label_map_util
 from django.shortcuts import redirect, render
-from django.http import HttpResponse
+from django.http import HttpResponse, request
 
 from django.contrib.auth.decorators import login_required
 # import pygame
@@ -456,6 +456,9 @@ class VideoCamera(object):
             (self.grabbed, self.frame) = self.video.read()
 
 
+speechMessage = ""
+
+
 class WSConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
@@ -491,7 +494,7 @@ class WSConsumer(WebsocketConsumer):
 
         frameNumber = 0
 
-        for i in range(15):
+        for i in range(5):
 
             ret, frame = cap.read()
             image_np = np.array(frame)
@@ -541,10 +544,6 @@ class WSConsumer(WebsocketConsumer):
 
             print("In")
             #     print(len(frame_uri))
-            # textList = detectedText(detectedClass, detectedScore)
-            # textForSpeech(textList)
-            # speakWithoutRequest()
-            # speechMessage = stringToPrint(textList)
 
             print("Hello from ML")
 
@@ -558,3 +557,35 @@ class WSConsumer(WebsocketConsumer):
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 cap.release()
                 break
+
+        textList = detectedText(detectedClass, detectedScore)
+        textForSpeech(textList)
+        # speakWithoutRequest()
+        # speechMessage = stringToPrint(textList)
+        # # context = {'speechMessage': speechMessage}
+        # print(speechMessage)
+        # return render(request, 'index2.html', context=context)
+        # redirect("/liveText")
+
+
+def live(request):
+    diction = {'sample_text': 'This is a text'}
+    return render(request, 'liveFeed.html', context=diction)
+
+
+def liveText(request):
+    speakWithoutRequest()
+    textList = readFile()
+    speechMessage = stringToPrint(textList)
+    # context = {'speechMessage': speechMessage}
+    print(speechMessage)
+    diction = {'speechMessage': speechMessage}
+    print("Hello boy")
+    print(speechMessage)
+    return render(request, 'index2.html', context=diction)
+
+
+def readFile():
+    with open('text_to_speech.txt') as f:
+        lines = f.readlines()
+    return lines

@@ -1,0 +1,248 @@
+<style>
+    .hello-msg {
+      font-size: 20px;
+      color: blueviolet;
+      margin-right: 20px;
+    }
+  
+    .left,
+    .right {
+      height: 50%;
+      width: 50%;
+      position: fixed;
+      overflow-x: hidden;
+      padding-top: 20px;
+    }
+  
+    .left {
+      left: 0;
+      background: lightblue;
+    }
+  
+    .right {
+      right: 0;
+      background: lightgoldenrodyellow;
+    }
+  
+    #rcorners1 {
+      border-radius: 25px;
+      border: 2px solid white;
+      padding: 20px;
+      width: 399px;
+      height: 300px;
+    }
+  </style>
+  
+  
+  {% load static %}
+  <!DOCTYPE HTML>
+  <!--
+      Stellar by HTML5 UP
+      html5up.net | @ajlkn
+      Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+  -->
+  <html>
+  
+  <head>
+    <title>Ecfor</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="{% static 'assets/css/main.css' %}" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <noscript>
+      <link rel="stylesheet" href="{% static 'assets/css/noscript.css' %}" />
+    </noscript>
+  </head>
+  
+  <body class="is-preload">
+    <nav class="navbar navbar-default" style="all:none !important;">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="{% url 'Communication:index'  %}">Ecfor</a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Home</a></li>
+        </ul>
+      </div>
+    </nav>
+  
+    <!-- Wrapper -->
+    <div id="wrapper">
+  
+      <!-- Header -->
+  
+  
+      <!-- Nav -->
+  
+  
+      <!-- Main -->
+      <div id="main">
+  
+  
+        <!-- Introduction -->
+        <section id="intro" class="main">
+          <div class="spotlight">
+            <div class="content">
+              <span class="hello-msg">Hello, {{request.user}}.</span>
+              <span class="hello-msg">
+                <br><br>
+                <!-- <a href="{% url 'Authentication:logout' %}">Logout</a> -->
+              </span>
+  
+              <table>
+                <tr>
+                  <th bgcolor="#e07985" id="rcorners1">
+                    <div class="">
+                      <h1 align="center" style="color: white">Speech to Sign</h1>
+                      <a align="center" class="button" style="color: white !important; font-size: large;"
+                        href="{% url 'Communication:listen' %}">Listen</a>
+                      <p style="color: white;">{{humanMessage}}</p>
+  
+                      <video id="videoPlayer" height="200px" width="360px" autoplay autobuffer controls></video>
+                      
+                      <script>
+                        var videoPlayer = document.getElementById('videoPlayer')
+                        var currentDirectory = window.location.pathname.split('/').slice(0, -1).join('/')
+                        console.log(currentDirectory)
+                        console.log("here");
+  
+                        var videos = JSON.parse("{{videoList|escapejs}}")
+                        vArray = []
+                        console.log(typeof (videos[0]))
+  
+                        for (let iter = 0; iter < videos.length; iter++) {
+                          vArray.push("/static/dataset/" + videos[iter] + ".mp4");
+                        }
+  
+  
+                        // var vArray = [
+                        //     "/static/dataset/00335.mp4",
+                        //     "/static/dataset/00336.mp4"
+                        // ]
+  
+  
+                        videoPlayer.src = vArray[0]
+  
+                        i = 1
+                        videoPlayer.onended = function () {
+                          if (i < vArray.length) {
+                            videoPlayer.src = vArray[i]
+                            i++
+                          }
+                        }
+                      </script>
+  
+  
+  
+  
+                    </div>
+                  </th>
+  
+                  <th bgcolor="#6c5494" id="rcorners1">
+                    <div class="">
+                      <h1 align="center" style="color: white">Sign to Text</h1>
+                      <a class="button" style="color: white !important; font-size:large"
+                        href="{% url 'Communication:speak' %}">Sign Language</a>
+                      <!-- <video id="#" height="200px" width="360px" autoplay autobuffer controls></video> -->
+                     
+                     
+                      
+                      <!-- <% for frame in frame_uri %> -->
+                      <div>
+                        <img id="app" alt="Sign Language Detection" height="200px" width="360px" name="slide">
+                        <a align="center" class="button" style="color: white !important; font-size: large;"
+                      href="{% url 'Communication:liveText' %}">Speak</a>
+
+                      <p style="color: white;">{{speechMessage}}</p>
+  
+                        <script>
+                          var i = 0; 			// Start Point
+                          var images = [];	// Images Array
+                          var time = 350;	// Time Between Switch
+                          var frameList = JSON.parse("{{frames|escapejs}}")
+  
+  
+                          // Change Image
+                          function changeImg() {
+                            document.slide.src = frameList[i]
+  
+                            // Check If Index Is Under Max
+                            if (i < frameList.length - 1) {
+                              // Add 1 to Index
+                              i++;
+                            } else {
+                              // Reset Back To O
+                              i = 0;
+                            }
+  
+                            // Run function every x seconds
+                            setTimeout("changeImg()", time);
+                          }
+  
+  
+                          // Run function when page loads
+                          window.onload = changeImg;
+                        </script>
+  
+  <script>
+    var socket = new WebSocket("ws://localhost:8000/speak/realtime/");
+  
+    socket.onmessage = function (event) {
+      var data = JSON.parse(event.data);
+      console.log(data);
+      document.getElementById("app").src=data.message;
+      // document.querySelector("#app").innerText = data.message;
+    };
+  </script>
+  
+                      </div>
+                      <!-- <% endfor %> -->
+                    </div>
+            </div>
+          </div>
+      </div>
+  
+      </th>
+      </tr>
+      </table>
+  
+  
+  
+  
+  
+  
+  
+      </section>
+    </div>
+  
+    <!-- Footer -->
+    <footer id="footer">
+      <section>
+        <ul class="actions">
+          <li><a href="{% url 'Authentication:logout' %}" class="button"
+              style="background-color: #EF5350 !important;">Logout</a></li>
+        </ul>
+      </section>
+      <section>
+  
+  
+      </section>
+  
+    </footer>
+  
+    </div>
+  
+    <!-- Scripts -->
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.scrollex.min.js' %}"></script>
+    <script src="{% static 'assets/js/jquery.scrolly.min.js' %}"></script>
+    <script src="{% static 'assets/js/browser.min.js' %}"></script>
+    <script src="{% static 'assets/js/breakpoints.min.js' %}"></script>
+    <script src="{% static 'assets/js/util.js' %}"></script>
+    <script src="{% static 'assets/js/main.js' %}"></script>
+  
+  </body>
+  
+  </html>

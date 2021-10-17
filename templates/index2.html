@@ -146,13 +146,14 @@
                     <a class="button" style="color: white !important; font-size:large"
                       href="{% url 'Communication:speak' %}">Sign Language</a>
                     <!-- <video id="#" height="200px" width="360px" autoplay autobuffer controls></video> -->
-                    <p style="color: white;">{{speechMessage}}</p>
+                   
                    
                     
                     <!-- <% for frame in frame_uri %> -->
                     <div>
                       <img id="app" alt="Sign Language Detection" height="200px" width="360px" name="slide">
-
+                      <p style="color: white;">{{speechMessage}}</p>
+                      
                       <script>
                         var i = 0; 			// Start Point
                         var images = [];	// Images Array
@@ -182,7 +183,7 @@
                         window.onload = changeImg;
                       </script>
 
-<script>
+<!-- <script>
   var socket = new WebSocket("ws://localhost:8000/speak/realtime/");
 
   socket.onmessage = function (event) {
@@ -191,7 +192,7 @@
     document.getElementById("app").src=data.message;
     // document.querySelector("#app").innerText = data.message;
   };
-</script>
+</script> -->
 
                     </div>
                     <!-- <% endfor %> -->
