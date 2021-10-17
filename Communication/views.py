@@ -1,3 +1,14 @@
+from PIL import Image
+from channels.generic.websocket import WebsocketConsumer
+from time import sleep
+from random import randint
+from io import BytesIO
+import base64
+from django.http.response import StreamingHttpResponse
+import numpy as np
+from object_detection.builders import model_builder
+from object_detection.utils import visualization_utils as viz_utils
+from object_detection.utils import label_map_util
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 
@@ -39,17 +50,8 @@ from google.protobuf import text_format
 import os
 import tensorflow as tf
 tf.config.run_functions_eagerly(True)
-from object_detection.utils import label_map_util
-from object_detection.utils import visualization_utils as viz_utils
-from object_detection.builders import model_builder
 
 # run
-import cv2 
-import numpy as np
-
-
-from django.http.response import StreamingHttpResponse
-from PIL import Image 
 
 
 @login_required(login_url='Authentication:login')
@@ -164,7 +166,7 @@ def speak(request):
 
 
 def speakWithoutRequest():
-   
+
     text_File = open("text_to_speech.txt", "r")
     myText = text_File.read().replace("\n", " ")
 
@@ -180,6 +182,7 @@ def speakWithoutRequest():
 
     playsound(audiofilename)
     os.remove(audiofilename)
+
 
 def text_to_sign():
     pass
@@ -246,17 +249,18 @@ CONFIG_PATH = MODEL_PATH+'/my_ssd_mobnet/pipeline.config'
 CHECKPOINT_PATH = MODEL_PATH+'/my_ssd_mobnet/'
 
 
+detectedClass = []
+detectedScore = []
+frame_uri = []
 
-detectedClass=[]
-detectedScore=[]
 
-def ML(request):  
-
+def ML(request):
 
     # run
     # Load pipeline config and build a detection model
     configs = config_util.get_configs_from_pipeline_file(CONFIG_PATH)
-    detection_model = model_builder.build(model_config=configs['model'], is_training=False)
+    detection_model = model_builder.build(
+        model_config=configs['model'], is_training=False)
 
     # Restore checkpoint
     ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
@@ -270,9 +274,8 @@ def ML(request):
         return detections
 
     # run
-    category_index = label_map_util.create_category_index_from_labelmap(ANNOTATION_PATH+'/label_map.pbtxt')
-
-
+    category_index = label_map_util.create_category_index_from_labelmap(
+        ANNOTATION_PATH+'/label_map.pbtxt')
 
     # run
     # Setup capture
@@ -280,35 +283,34 @@ def ML(request):
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-
-
     # run
-    numberOfFrame=0
-    frame_uri=[]
+    numberOfFrame = 0
 
-    frameNumber=0
+    frameNumber = 0
 
-    while numberOfFrame<5: 
+    while numberOfFrame < 5:
         ret, frame = cap.read()
         image_np = np.array(frame)
-        numberOfFrame=numberOfFrame+1
+        numberOfFrame = numberOfFrame+1
         print(numberOfFrame)
-        
-        input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
+
+        input_tensor = tf.convert_to_tensor(
+            np.expand_dims(image_np, 0), dtype=tf.float32)
         detections = detect_fn(input_tensor)
-        
+
         num_detections = int(detections.pop('num_detections'))
         detections = {key: value[0, :num_detections].numpy()
-                    for key, value in detections.items()}
+                      for key, value in detections.items()}
         detections['num_detections'] = num_detections
 
         # detection_classes should be ints.
-        detections['detection_classes'] = detections['detection_classes'].astype(np.int64)
+        detections['detection_classes'] = detections['detection_classes'].astype(
+            np.int64)
         detectedClass.append(detections['detection_classes'][0])
         detectedScore.append(detections['detection_scores'][0])
         # print(detections['detection_classes'][0])
         # print(detections['detection_scores'][0])
-        
+
         pred = get_prediction(input_tensor)
         # print(pred)
 
@@ -316,35 +318,36 @@ def ML(request):
         image_np_with_detections = image_np.copy()
 
         viz_utils.visualize_boxes_and_labels_on_image_array(
-                    image_np_with_detections,
-                    detections['detection_boxes'],
-                    detections['detection_classes']+label_id_offset,
-                    detections['detection_scores'],
-                    category_index,
-                    use_normalized_coordinates=True,
-                    max_boxes_to_draw=5,
-                    min_score_thresh=.5,
-                    agnostic_mode=False)
-        
+            image_np_with_detections,
+            detections['detection_boxes'],
+            detections['detection_classes']+label_id_offset,
+            detections['detection_scores'],
+            category_index,
+            use_normalized_coordinates=True,
+            max_boxes_to_draw=5,
+            min_score_thresh=.5,
+            agnostic_mode=False)
 
         # cv2.imshow('object detection',  cv2.resize(image_np_with_detections, (800, 600)))
         image_uri = to_image(cv2.resize(image_np_with_detections, (800, 600)))
         frame_uri.append(image_uri)
         # image_uri = to_data_uri(pil_image)
         # print(numberOfFrame)
-        if(numberOfFrame==5):
-        #     print("In")
-        #     print(len(frame_uri))
-            textList=detectedText(detectedClass,detectedScore)
+        if(numberOfFrame == 5):
+            print("In")
+            #     print(len(frame_uri))
+            textList = detectedText(detectedClass, detectedScore)
             textForSpeech(textList)
             speakWithoutRequest()
-            speechMessage=stringToPrint(textList)
+            speechMessage = stringToPrint(textList)
+
+            print("Hello from ML")
 
             frames = json.dumps(frame_uri)
-            context = {'frames': frames, 'speechMessage':speechMessage}
+            context = {'frames': frames, 'speechMessage': speechMessage}
             return render(request, 'index2.html', context=context)
         # return render(request, 'index2.html', {'image_uri': image_uri})
-        
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
             cap.release()
             break
@@ -353,7 +356,8 @@ def ML(request):
 @tf.function
 def get_prediction(image):
     configs = config_util.get_configs_from_pipeline_file(CONFIG_PATH)
-    detection_model = model_builder.build(model_config=configs['model'], is_training=False)
+    detection_model = model_builder.build(
+        model_config=configs['model'], is_training=False)
     image, shapes = detection_model.preprocess(image)
     prediction_dict = detection_model.predict(image, shapes)
 #     detections = detection_model.postprocess(prediction_dict, shapes)
@@ -364,36 +368,33 @@ def get_prediction(image):
 #     return StreamingHttpResponse(gen(()),
 # 					content_type='multipart/x-mixed-replace; boundary=frame')
 
-import base64
-from io import BytesIO
 
 def to_image(numpy_img):
     img = Image.fromarray(numpy_img, 'RGB')
     # return img
     data = BytesIO()
-    img.save(data, "JPEG") # pick your format
+    img.save(data, "JPEG")  # pick your format
     data64 = base64.b64encode(data.getvalue())
-    return u'data:img/jpeg;base64,'+data64.decode('utf-8') 
-
-
-
+    return u'data:img/jpeg;base64,'+data64.decode('utf-8')
 
 
 # def to_data_uri(pil_img):
 #     data = BytesIO()
 #     img.save(data, "JPEG") # pick your format
 #     data64 = base64.b64encode(data.getvalue())
-#     return u'data:img/jpeg;base64,'+data64.decode('utf-8') 
+#     return u'data:img/jpeg;base64,'+data64.decode('utf-8')
 
 def detectedText(detectedClass, detectedScore):
-    dictionary ={0:"Hello",1:"Yes",2:"No",3:"Thank you",4:"I Love You"}
-    finalText=[]
+    dictionary = {0: "Hello", 1: "Yes", 2: "No",
+                  3: "Thank you", 4: "I Love You"}
+    finalText = []
     for i in range(len(detectedClass)):
-        if detectedScore[i]>.80 and (dictionary[detectedClass[i]] not in finalText):
-            finalText.append( dictionary[detectedClass[i]] )
-        
+        if detectedScore[i] > .80 and (dictionary[detectedClass[i]] not in finalText):
+            finalText.append(dictionary[detectedClass[i]])
+
     print(finalText)
     return finalText
+
 
 def textForSpeech(textList):
     with open('text_to_speech.txt', 'w') as f:
@@ -402,18 +403,17 @@ def textForSpeech(textList):
 
 
 def stringToPrint(wordList):
-    message=""
-    first=True
+    message = ""
+    first = True
 
     for word in wordList:
-        if first==False:
-            message=message+" "
+        if first == False:
+            message = message+" "
 
-        message=message+word
-        first=False
+        message = message+word
+        first = False
 
     return message
-
 
 
 # Unproccessed Video Feed
@@ -437,7 +437,6 @@ def livefeed(request):
         print(e)
 
 
-
 class VideoCamera(object):
     def __init__(self):
         self.video = cv2.VideoCapture(0)
@@ -455,3 +454,107 @@ class VideoCamera(object):
     def update(self):
         while True:
             (self.grabbed, self.frame) = self.video.read()
+
+
+class WSConsumer(WebsocketConsumer):
+    def connect(self):
+        self.accept()
+        # run
+        # Load pipeline config and build a detection model
+        configs = config_util.get_configs_from_pipeline_file(CONFIG_PATH)
+        detection_model = model_builder.build(
+            model_config=configs['model'], is_training=False)
+
+        # Restore checkpoint
+        ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
+        ckpt.restore(os.path.join(CHECKPOINT_PATH, 'ckpt-6')).expect_partial()
+
+        @tf.function
+        def detect_fn(image):
+            image, shapes = detection_model.preprocess(image)
+            prediction_dict = detection_model.predict(image, shapes)
+            detections = detection_model.postprocess(prediction_dict, shapes)
+            return detections
+
+        # run
+        category_index = label_map_util.create_category_index_from_labelmap(
+            ANNOTATION_PATH+'/label_map.pbtxt')
+
+        # run
+        # Setup capture
+        cap = cv2.VideoCapture(0)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        # run
+        numberOfFrame = 0
+
+        frameNumber = 0
+
+        for i in range(15):
+
+            ret, frame = cap.read()
+            image_np = np.array(frame)
+            numberOfFrame = numberOfFrame+1
+            print(numberOfFrame)
+
+            input_tensor = tf.convert_to_tensor(
+                np.expand_dims(image_np, 0), dtype=tf.float32)
+            detections = detect_fn(input_tensor)
+
+            num_detections = int(detections.pop('num_detections'))
+            detections = {key: value[0, :num_detections].numpy()
+                          for key, value in detections.items()}
+            detections['num_detections'] = num_detections
+
+            # detection_classes should be ints.
+            detections['detection_classes'] = detections['detection_classes'].astype(
+                np.int64)
+            detectedClass.append(detections['detection_classes'][0])
+            detectedScore.append(detections['detection_scores'][0])
+            # print(detections['detection_classes'][0])
+            # print(detections['detection_scores'][0])
+
+            pred = get_prediction(input_tensor)
+            # print(pred)
+
+            label_id_offset = 1
+            image_np_with_detections = image_np.copy()
+
+            viz_utils.visualize_boxes_and_labels_on_image_array(
+                image_np_with_detections,
+                detections['detection_boxes'],
+                detections['detection_classes']+label_id_offset,
+                detections['detection_scores'],
+                category_index,
+                use_normalized_coordinates=True,
+                max_boxes_to_draw=5,
+                min_score_thresh=.5,
+                agnostic_mode=False)
+
+            # cv2.imshow('object detection',  cv2.resize(image_np_with_detections, (800, 600)))
+            image_uri = to_image(cv2.resize(
+                image_np_with_detections, (800, 600)))
+            frame_uri.append(image_uri)
+            # image_uri = to_data_uri(pil_image)
+            # print(numberOfFrame)
+
+            print("In")
+            #     print(len(frame_uri))
+            # textList = detectedText(detectedClass, detectedScore)
+            # textForSpeech(textList)
+            # speakWithoutRequest()
+            # speechMessage = stringToPrint(textList)
+
+            print("Hello from ML")
+
+            frames = json.dumps(frame_uri)
+            self.send(json.dumps({'message': image_uri}))
+            sleep(1)
+            # context = {'frames': frames, 'speechMessage': speechMessage}
+            # return render(request, 'index2.html', context=context)
+            # return render(request, 'index2.html', {'image_uri': image_uri})
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                cap.release()
+                break

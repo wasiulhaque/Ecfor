@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Authentication',
     'Communication',
+    'channels',
 ]
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -76,7 +77,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Ecfor.wsgi.application'
-
+ASGI_APPLICATION = 'Ecfor.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -86,7 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'bankBase',
         'USER': 'root',
-        'PASSWORD': 'mysqlpassword1234',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '3306',
     }

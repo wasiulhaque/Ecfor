@@ -151,7 +151,7 @@
                     
                     <!-- <% for frame in frame_uri %> -->
                     <div>
-                      <img alt="Sign Language Detection" height="200px" width="360px" name="slide">
+                      <img id="app" alt="Sign Language Detection" height="200px" width="360px" name="slide">
 
                       <script>
                         var i = 0; 			// Start Point
@@ -181,6 +181,17 @@
                         // Run function when page loads
                         window.onload = changeImg;
                       </script>
+
+<script>
+  var socket = new WebSocket("ws://localhost:8000/speak/realtime/");
+
+  socket.onmessage = function (event) {
+    var data = JSON.parse(event.data);
+    console.log(data);
+    document.getElementById("app").src=data.message;
+    // document.querySelector("#app").innerText = data.message;
+  };
+</script>
 
                     </div>
                     <!-- <% endfor %> -->
