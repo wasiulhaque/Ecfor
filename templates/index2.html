@@ -152,7 +152,10 @@
                     <!-- <% for frame in frame_uri %> -->
                     <div>
                       <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" id="app" height="200px" width="360px" name="slide">
-                      <p style="color: white;">{{speechMessage}}</p>
+                      
+                      {% if speechMessage %}
+                      <p style="color: white; font-size: 18;">Detected Text: {{speechMessage}}</p>
+                      {% endif %}
 
                       <script>
                         var i = 0; 			// Start Point

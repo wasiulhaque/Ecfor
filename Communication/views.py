@@ -249,11 +249,6 @@ CONFIG_PATH = MODEL_PATH+'/my_ssd_mobnet/pipeline.config'
 CHECKPOINT_PATH = MODEL_PATH+'/my_ssd_mobnet/'
 
 
-detectedClass = []
-detectedScore = []
-frame_uri = []
-
-
 def ML(request):
 
     # run
@@ -385,11 +380,11 @@ def to_image(numpy_img):
 #     return u'data:img/jpeg;base64,'+data64.decode('utf-8')
 
 def detectedText(detectedClass, detectedScore):
-    dictionary = {0: "Hello", 1: "Yes", 2: "No",
-                  3: "Thank you", 4: "I Love You"}
+    dictionary = {0: "bill", 1: "go", 2: "house",
+                  3: "i", 4: "pay", 5: "please", 6: "wow"}
     finalText = []
     for i in range(len(detectedClass)):
-        if detectedScore[i] > .80 and (dictionary[detectedClass[i]] not in finalText):
+        if detectedScore[i] > .50 and (dictionary[detectedClass[i]] not in finalText):
             finalText.append(dictionary[detectedClass[i]])
 
     print(finalText)
@@ -416,44 +411,44 @@ def stringToPrint(wordList):
     return message
 
 
-# Unproccessed Video Feed
-def gen(camera):
-    while True:
-        frame = cam.get_frame()
-        # print(frame)
-        # m_image, lab =predict_video(frame, "result")
-        print(lab)
-        # m_image = cv2.cvtColor(m_image, cv2.COLOR_RGB2BGR)
-        ret, m_image = cv2.imencode('.jpg', m_image)
-        m_image = m_image.tobytes()
-        yield(b'--frame\r\n'
-              b'Content-Type: image/jpeg\r\n\r\n' + m_image + b'\r\n\r\n')
+# # Unproccessed Video Feed
+# def gen(camera):
+#     while True:
+#         frame = cam.get_frame()
+#         # print(frame)
+#         # m_image, lab =predict_video(frame, "result")
+#         print(lab)
+#         # m_image = cv2.cvtColor(m_image, cv2.COLOR_RGB2BGR)
+#         ret, m_image = cv2.imencode('.jpg', m_image)
+#         m_image = m_image.tobytes()
+#         yield(b'--frame\r\n'
+#               b'Content-Type: image/jpeg\r\n\r\n' + m_image + b'\r\n\r\n')
 
 
-def livefeed(request):
-    try:
-        return StreamingHttpResponse(gen(VideoCamera()), content_type="multipart/x-mixed-replace;boundary=frame")
-    except Exception as e:  # This is bad! replace it with proper handling
-        print(e)
+# def livefeed(request):
+#     try:
+#         return StreamingHttpResponse(gen(VideoCamera()), content_type="multipart/x-mixed-replace;boundary=frame")
+#     except Exception as e:  # This is bad! replace it with proper handling
+#         print(e)
 
 
-class VideoCamera(object):
-    def __init__(self):
-        self.video = cv2.VideoCapture(0)
-        (self.grabbed, self.frame) = self.video.read()
-        threading.Thread(target=self.update, args=()).start()
+# class VideoCamera(object):
+#     def __init__(self):
+#         self.video = cv2.VideoCapture(0)
+#         (self.grabbed, self.frame) = self.video.read()
+#         threading.Thread(target=self.update, args=()).start()
 
-    def __del__(self):
-        self.video.release()
+#     def __del__(self):
+#         self.video.release()
 
-    def get_frame(self):
-        image = self.frame
-        # ret, jpeg = cv2.imencode('.jpg', image)
-        return image
+#     def get_frame(self):
+#         image = self.frame
+#         # ret, jpeg = cv2.imencode('.jpg', image)
+#         return image
 
-    def update(self):
-        while True:
-            (self.grabbed, self.frame) = self.video.read()
+#     def update(self):
+#         while True:
+#             (self.grabbed, self.frame) = self.video.read()
 
 
 speechMessage = ""
@@ -493,8 +488,11 @@ class WSConsumer(WebsocketConsumer):
         numberOfFrame = 0
 
         frameNumber = 0
+        detectedClass = []
+        detectedScore = []
+        frame_uri = []
 
-        for i in range(5):
+        for i in range(15):
 
             ret, frame = cap.read()
             image_np = np.array(frame)
